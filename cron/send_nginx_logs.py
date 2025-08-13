@@ -17,7 +17,7 @@ def parse_nginx_access_log(log_file):
 
     log_pattern = re.compile(r'\S+ \S+ \S+ \[.*?\] "(.*?)" (\d+)')
 
-    with open(log_file, 'r') as f:
+    with open(log_file, 'r', errors='backslashreplace') as f:
         for line in f:
             match = log_pattern.search(line)
             if match:
@@ -41,7 +41,7 @@ def parse_nginx_error_log(log_file):
 
     log_pattern = re.compile(r'\S+ \S+ \S+ \S+ \S+ (.*)$')
 
-    with open(log_file, 'r') as f:
+    with open(log_file, 'r', errors='backslashreplace') as f:
         for line in f:
             match = log_pattern.search(line)
             if match:
@@ -70,7 +70,6 @@ if __name__ == '__main__':
         message = '\n'.join(access_log)
         message += '\n\n\n'
         message += '\n'.join(error_log)
-
         Job.insert(
             'email',
             user_id=0,
