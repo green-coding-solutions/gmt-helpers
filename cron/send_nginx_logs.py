@@ -22,7 +22,7 @@ def parse_nginx_access_log(log_file):
             match = log_pattern.search(line)
             if match:
                 url, status = match.groups()
-                status_groups[status][url] += 1
+                status_groups[status][url.rsplit('?', maxsplit=1)[0]] += 1
             else:
                 raise RuntimeError('Could not match line', line)
 
