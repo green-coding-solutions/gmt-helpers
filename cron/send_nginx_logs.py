@@ -7,6 +7,7 @@ faulthandler.enable(file=sys.__stderr__)  # will catch segfaults and write to st
 
 import re
 from collections import defaultdict
+from http import HTTPStatus
 
 from lib import error_helpers
 from lib.job.base import Job
@@ -28,7 +29,7 @@ def parse_nginx_access_log(log_file):
 
     buffer = []
     for status, urls in sorted(status_groups.items()):
-        buffer.append(f"\n\nStatus Code {status}:")
+        buffer.append(f"\n\nStatus Code {status} ({HTTPStatus(int(status)).phrase} - {HTTPStatus(int(status)).description})")
         for url, count in sorted(urls.items(), key=lambda x: x[1], reverse=True):
             buffer.append(f"  {url}: {count}")
 
