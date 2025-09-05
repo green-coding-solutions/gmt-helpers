@@ -29,7 +29,12 @@ def parse_nginx_access_log(log_file):
 
     buffer = []
     for status, urls in sorted(status_groups.items()):
-        buffer.append(f"\n\nStatus Code {status} ({HTTPStatus(int(status)).phrase} - {HTTPStatus(int(status)).description})")
+        buffer.append(f"\n\nStatus Code {status}")
+        try:
+            http_status = HTTPStatus(int(status)) # can fail bc NGINX has custom HTTP codes like 499
+            buffer.append(f" ({http_status.phrase} - {http_status.description})")
+        except as e:
+            print(e)
         for url, count in sorted(urls.items(), key=lambda x: x[1], reverse=True):
             buffer.append(f"  {url}: {count}")
 
