@@ -27,7 +27,7 @@ def parse_nginx_access_log(log_file, limit=0):
             else:
                 raise RuntimeError('Could not match line', line)
 
-    buffer = ["Showing all HTTP access with frequency > {limit}"]
+    buffer = [f"Showing all HTTP access with frequency > {limit}"]
     for status, urls in sorted(status_groups.items()):
 
         try:
