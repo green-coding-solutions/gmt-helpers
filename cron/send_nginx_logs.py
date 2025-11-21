@@ -39,7 +39,7 @@ def parse_nginx_access_log(log_file, limit=0):
         for url, count in sorted(urls.items(), key=lambda x: x[1], reverse=True):
             if (count < limit):
                 continue
-            buffer.append(f"  {url}: {count}")
+            buffer.append(f"{count}: {url}")
 
 
     return buffer
