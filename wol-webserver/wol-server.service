@@ -1,0 +1,13 @@
+[Unit]
+Description=WoL Server
+
+[Service]
+ExecStart=%h/wol_webserver/venv/bin/gunicorn --bind 0.0.0.0:9579 app:app
+WorkingDirectory=%h/wol_webserver/
+Restart=always
+RestartSec=5s
+#StandardOutput=file:%h/wol_webserver.log
+#StandardError=file:%h/wol_webserver.log
+
+[Install]
+WantedBy=default.target

@@ -22,6 +22,10 @@ A little script that enables you to submit jobs to the cluster from the shell. Y
 
 You will need to move this script into the GMT repo and then it can parse the NGINX logs and send you an email.
 
+## wol-webserver
+
+If you need to wake a machine from the outside inside your local network you can use this ingress
+script to transport a connect to a webserver to WoL command
 
 
 ## Contributing
