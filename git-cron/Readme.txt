@@ -38,3 +38,5 @@ This example would run the script every 4 hours.
 ## Configuration
 
 The script's behavior is configured via `config.json` and its state is managed by `repo_state.json`. Please refer to these files for detailed configuration options and how to manage the monitored repositories and benchmarking triggers.
+
+In the `variables` section you can use a magig keyword `__GIT_HASH__` that will be replaced with the hash of the git commit on the branch that you are watching

@@ -182,10 +182,8 @@ def load_json(path: str) -> Dict[str, Any]:
 
 
 def save_json(path: str, data: Dict[str, Any]) -> None:
-    tmp_path = path + ".tmp"
-    with open(tmp_path, "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, sort_keys=True)
-    os.replace(tmp_path, path)
 
 
 # ---- Main monitoring logic ----
