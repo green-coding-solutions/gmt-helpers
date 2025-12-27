@@ -34,9 +34,27 @@ If you use Wake-on-LAN for your measurement machines to save energy in the clust
 
 A little script that enables you to submit jobs to the cluster from the shell. You will need to have `requests` installed. Otherwise run `pip install requests`.
 
-## cron/send_nginx_logs.py
+## nginx/send_log_report.py
+*venv Execution*
 
-You will need to move this script into the GMT repo and then it can parse the NGINX logs and send you an email.
+You need to make the nginx logs from the previous day readable to the script either by copying them out somewhere or changing the `chmod` in place.
+Example cronjob if you run nginx outside of the containers as `www-data`: 
+```cron
+15 0 * * * chmod 644 /var/log/nginx/access.log.1
+16 0 * * * chmod 644 /var/log/nginx/error.log.1
+```
+
+Example cronjob then for python to run the script: `$ /home/user/green-metrics-tool/venv/bin/python3 /home/user/gmt-helpers/nginx/send_log_report.py`
+
+## db/consistency.py
+*venv Execution*
+
+You need to create the following files from the `.example` files:
+
+- `db/queries_check_empty.sql`: Contains queries separated by *\n-------\n* that should result in empty result. Otherwise warning email is sent to configured error email address of GMT.
+- `db/queries_info.sql`: Reports result via email from query if no empty result is returned to configured error email address of GMT.
+
+Example cronjob then for python to run the script: `$ /home/user/green-metrics-tool/venv/bin/python3 /home/user/gmt-helpers/db/check_consistency.py`
 
 ## wol-webserver
 *Service Execution*
