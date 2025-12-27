@@ -74,7 +74,7 @@ if __name__ == '__main__':
         Job.insert(
             'email',
             user_id=0,
-            email='arne@green-coding.io',
+            email='errors@green-coding.io',
             name='NGINX Logs parsed',
             message=message
         )
