@@ -4,12 +4,14 @@
 SELECT *
 FROM measurement_metrics as mm
 JOIN measurement_values as mv ON mv.measurement_metric_id = mm.id
+JOIN runs as r ON mm.run_id = r.id
 WHERE
     (
         mm.metric = 'cpu_throttling_power_msr_component'
         OR mm.metric = 'cpu_throttling_thermal_msr_component'
     )
-    AND value = 1;
+    AND value = 1
+    AND r.created_at > NOW() - INTERVAL '25 HOURS';
 
 ######
 
@@ -27,7 +29,7 @@ FROM runs
 CROSS JOIN LATERAL jsonb_each_text(machine_specs) AS kv(key, value)
 WHERE
     (kv.value = 'Unknown' OR kv.value = 'File not found')
-    -- AND created_at > '2025-09-29 00:00:00' -- add time constraint if needed
+    -- AND created_at > NOW() - INTERVAL '25 HOURS' -- add time constraint if needed
     AND kv.key NOT IN ('Docker Volumes', 'Scaling Governor', 'SGX', 'Turbo Boost (1=off)', 'Turbo Boost (Legacy non intel_pstate)', 'Virtualization')
 GROUP BY kv.key;
 
@@ -47,6 +49,6 @@ WHERE
     OR ( (energy_uj::float /duration_us <= 4.44  AND cpu = 'Apple_M1') OR (energy_uj::float /duration_us > 14.39  AND cpu = 'Apple_M1'))
 )
 
--- AND created_at >= '2025-07-30' -- add time constraint if needed
+-- AND created_at > NOW() - INTERVAL '25 HOURS' -- add time constraint if needed
 ORDER BY created_at DESC;
 
