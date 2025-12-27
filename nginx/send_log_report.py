@@ -74,7 +74,7 @@ if __name__ == '__main__':
         Job.insert(
             'email',
             user_id=0,
-            email='errors@green-coding.io',
+            email=GlobalConfig().config['admin']['notification_email'],
             name='NGINX Logs parsed',
             message=message
         )
