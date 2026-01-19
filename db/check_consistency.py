@@ -28,7 +28,7 @@ if __name__ == '__main__':
             data = DB().fetch_all(query)
             if data:
                 Job.insert(
-                    'email',
+                    'email-simple',
                     user_id=0,
                     email=GlobalConfig().config['admin']['error_email'],
                     name='Query returned non empty result',
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
             if data:
                 Job.insert(
-                    'email',
+                    'email-simple',
                     user_id=0,
                     email=GlobalConfig().config['admin']['notification_email'],
                     name='Info query',
