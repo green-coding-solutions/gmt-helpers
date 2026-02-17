@@ -1,2 +1,4 @@
 git-cron/repo_state.json
 git-cron/config.json
+db/queries_check_empty.sql
+db/queries_info.sql

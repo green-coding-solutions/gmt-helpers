@@ -1,0 +1,69 @@
+-- Separate queries in this file via newline + ###### + newline
+
+-- check for DB throttling
+SELECT *
+FROM measurement_metrics as mm
+JOIN measurement_values as mv ON mv.measurement_metric_id = mm.id
+JOIN runs as r ON mm.run_id = r.id
+WHERE
+    (
+        mm.metric = 'cpu_throttling_power_msr_component'
+        OR mm.metric = 'cpu_throttling_thermal_msr_component'
+    )
+    AND value = 1
+    AND r.created_at > NOW() - INTERVAL '25 HOURS';
+
+######
+
+-- check for new warnings in DB
+SELECT runs.name, runs.machine_id, warnings.message,warnings.created_at
+FROM warnings
+JOIN runs on runs.id = warnings.run_id
+WHERE warnings.created_at > NOW() - INTERVAL '25 HOURS';
+
+######
+
+-- check for broken keys in the machine specs
+SELECT kv.key
+FROM runs
+CROSS JOIN LATERAL jsonb_each_text(machine_specs) AS kv(key, value)
+WHERE
+    (kv.value = 'Unknown' OR kv.value = 'File not found')
+    -- AND created_at > NOW() - INTERVAL '25 HOURS' -- add time constraint if needed
+    AND kv.key NOT IN ('Docker Volumes', 'Scaling Governor', 'SGX', 'Turbo Boost (1=off)', 'Turbo Boost (Legacy non intel_pstate)', 'Virtualization')
+GROUP BY kv.key;
+
+
+######
+
+-- Check for broken Eco CI entries
+
+SELECT energy_uj::float/duration_us as wattage, created_at, *
+FROM ci_measurements
+WHERE
+(
+    cpu_util_avg < 1 OR cpu_util_avg > 100
+
+    OR (energy_uj::float /duration_us <= 1.75  AND cpu = 'EPYC_7763') OR ((energy_uj::float /duration_us >= 8.179  AND cpu = 'EPYC_7763') )
+    OR ((energy_uj::float /duration_us <= 1.064  AND cpu = 'EPYC_7B12') OR (energy_uj::float /duration_us >= 4.40  AND cpu = 'EPYC_7B12'))
+    OR ( (energy_uj::float /duration_us <= 4.44  AND cpu = 'Apple_M1') OR (energy_uj::float /duration_us > 14.39  AND cpu = 'Apple_M1'))
+)
+
+-- AND created_at > NOW() - INTERVAL '25 HOURS' -- add time constraint if needed
+ORDER BY created_at DESC;
+
+###### Check for index exhaustion
+
+SELECT
+    schemaname,
+    sequencename,
+    data_type,
+    start_value,
+    min_value,
+    max_value,
+    increment_by,
+    last_value,
+    last_value::float/max_value as ratio
+FROM pg_sequences
+WHERE last_value::float/max_value > 0.05
+ORDER BY schemaname, sequencename;

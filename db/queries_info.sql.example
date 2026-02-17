@@ -1,0 +1,6 @@
+-- Separate queries in this file via newline + ###### + newline
+
+-- Check who is currently on the watchlist
+SELECT * FROM watchlist WHERE schedule_mode = 'weekly'
+
+######

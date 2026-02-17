@@ -72,9 +72,9 @@ if __name__ == '__main__':
         message += '\n\n\n'
         message += '\n'.join(error_log)
         Job.insert(
-            'email',
+            'email-simple',
             user_id=0,
-            email='arne@green-coding.io',
+            email=GlobalConfig().config['admin']['notification_email'],
             name='NGINX Logs parsed',
             message=message
         )
