@@ -8,15 +8,19 @@
     {
       "name": "NextCloud Master Every Commit",
       "repo_to_watch": "https://github.com/nextcloud/server",
-      "repo_to_run": "https://github.com/green-coding-solutions/nextcloud-runner",
-      "machine_id": 12,
-      "email": "didi@green-coding.io",
-      "branch_to_run": "main",
       "branch_to_watch": "master",
-      "filename": "usage_scenario_master.yml",
-      "variables": {
-        "__GMT_VAR_NCHASH__": "__GIT_HASH__"
-      }
+      "runs": [
+        {
+          "repo_to_run": "https://github.com/green-coding-solutions/nextcloud-runner",
+          "machine_id": 12,
+          "email": "didi@green-coding.io",
+          "branch_to_run": "main",
+          "filename": "usage_scenario_master.yml",
+          "variables": {
+            "__GMT_VAR_NCHASH__": "__GIT_HASH__"
+          }
+        }
+      ]
     }
   ]
 }

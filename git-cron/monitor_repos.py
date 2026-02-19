@@ -124,12 +124,19 @@ def get_latest_commit(repo_url: str, branch: Optional[str] = None, timeout: int 
     if not path:
         raise GitError(f"Repo URL seems incomplete: {repo_url}")
 
+    path_parts = [part for part in path.split("/") if part]
+    if not path_parts:
+        raise GitError(f"Repo URL seems incomplete: {repo_url}")
+
     if "github.com" in host:
         # path = owner/repo[/...]; we only need first two segments
-        parts = path.split("/")
-        if len(parts) < 2:
+        if len(path_parts) < 2:
             raise GitError(f"Cannot parse GitHub repo from URL: {repo_url}")
-        owner, repo = parts[0], parts[1]
+        owner, repo = path_parts[0], path_parts[1]
+        if repo.endswith(".git"):
+            repo = repo[:-4]
+        if not repo:
+            raise GitError(f"Cannot parse GitHub repo from URL: {repo_url}")
         api_url = f"https://api.github.com/repos/{owner}/{repo}/commits"
         params = {"per_page": 1}
         if branch:
@@ -147,7 +154,13 @@ def get_latest_commit(repo_url: str, branch: Optional[str] = None, timeout: int 
 
     elif "gitlab" in host:
         # works for gitlab.com and self-hosted GitLab domains containing "gitlab"
-        project = quote_plus(path)
+        normalized_parts = list(path_parts)
+        if normalized_parts[-1].endswith(".git"):
+            normalized_parts[-1] = normalized_parts[-1][:-4]
+        normalized_project = "/".join(part for part in normalized_parts if part)
+        if not normalized_project:
+            raise GitError(f"Cannot parse GitLab project from URL: {repo_url}")
+        project = quote_plus(normalized_project)
         api_root = f"{parsed.scheme}://{parsed.netloc}"
         api_url = f"{api_root}/api/v4/projects/{project}/repository/commits"
         params = {"per_page": 1}
@@ -188,6 +201,29 @@ def save_json(path: str, data: Dict[str, Any]) -> None:
 
 # ---- Main monitoring logic ----
 
+def build_payload_for_run(default_name: str, run_cfg: Dict[str, Any], latest_commit: str) -> Dict[str, Any]:
+    payload: Dict[str, Any] = {
+        "name": run_cfg.get("name", default_name),
+        "repo_url": run_cfg["repo_to_run"],
+        "machine_id": run_cfg["machine_id"],
+        "branch": run_cfg.get("branch_to_run", "main"),
+        "filename": run_cfg.get("filename", "usage_scenario.yml"),
+        "schedule_mode": "one-off",
+    }
+
+    if run_cfg.get("email"):
+        payload["email"] = run_cfg["email"]
+
+    vars_cfg = run_cfg.get("variables")
+    if isinstance(vars_cfg, dict) and vars_cfg:
+        resolved_vars: Dict[str, Any] = {}
+        for key, value in vars_cfg.items():
+            resolved_vars[key] = latest_commit if value == "__GIT_HASH__" else value
+        payload["usage_scenario_variables"] = resolved_vars
+
+    return payload
+
+
 def process_repo(client: APIClient, repo_cfg: Dict[str, Any], state: Dict[str, Any], global_timeout: int) -> None:
     
     repo_to_watch: str = repo_cfg["repo_to_watch"]
@@ -217,43 +253,49 @@ def process_repo(client: APIClient, repo_cfg: Dict[str, Any], state: Dict[str, A
         print("  No new commits. Nothing to do.")
         return
 
-    print(f"  New commit detected. Submitting job.")
+    runs = repo_cfg.get("runs", [])
+    if not isinstance(runs, list) or not runs:
+        print("  No runs configured under repo['runs']. Skipping submission.")
+        return
 
-    payload_base: Dict[str, Any] = {
-        "name": name,
-        "repo_url": repo_cfg["repo_to_run"],
-        "machine_id": repo_cfg["machine_id"],
-        "branch": repo_cfg.get("branch_to_run", "main"),
-        "filename": repo_cfg.get("filename", "usage_scenario.yml"),
-        "schedule_mode": "one-off",
-    }
+    print(f"  New commit detected. Submitting {len(runs)} run(s).")
 
-    if "email" in repo_cfg and repo_cfg["email"]:
-        payload_base["email"] = repo_cfg["email"]
+    attempted_submissions = False
+    for index, run_cfg in enumerate(runs, start=1):
+        if not isinstance(run_cfg, dict):
+            print(f"  Run {index}: invalid format (expected object), skipping.")
+            continue
 
-    vars_cfg = repo_cfg.get("variables")
+        missing = [field for field in ("repo_to_run", "machine_id") if field not in run_cfg]
+        if missing:
+            print(f"  Run {index}: missing required field(s): {', '.join(missing)}. Skipping.")
+            continue
 
-    if isinstance(vars_cfg, dict) and vars_cfg:
-        for k, v in vars_cfg.items():
-            if v == "__GIT_HASH__":
-                vars_cfg[k] = latest_commit
+        payload = build_payload_for_run(name, run_cfg, latest_commit)
+        attempted_submissions = True
+        print(
+            f"  Run {index}: submitting {payload['repo_url']} "
+            f"({payload['branch']}, {payload['filename']})"
+        )
 
-        payload_base["usage_scenario_variables"] = vars_cfg
+        try:
+            resp = client.submit_software(payload)
+            if resp is None:
+                print(f"  Run {index}: accepted (202), queued.")
+            else:
+                print(f"  Run {index}: unexpected response: {resp}")
+        except APIEmptyResponse204:
+            print(f"  Run {index}: API returned 204 No Content.")
+        except APIError as e:
+            print(f"  Run {index}: API error: {e}")
+        except requests.RequestException as e:
+            print(f"  Run {index}: HTTP error: {e}")
 
-    try:
-        resp = client.submit_software(dict(payload_base))
-        if resp is None:
-            print(f"Run: Accepted (202), queued.")
-        else:
-            print(f"Run: Unexpected response: {resp}")
-    except APIEmptyResponse204:
-        print(f"Run: API returned 204 No Content.")
-    except APIError as e:
-        print(f"Run: API error: {e}")
-    except requests.RequestException as e:
-        print(f"Run: HTTP error: {e}")
+    if not attempted_submissions:
+        print("  No valid runs to submit. State not updated.")
+        return
 
-    # Only update state after attempting submissions
+    # Only update state after attempting valid submissions
     state[state_key] = {"last_commit": latest_commit}
     print(f"Updated state: last_commit = {latest_commit}")
 

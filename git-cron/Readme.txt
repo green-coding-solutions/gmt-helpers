@@ -39,4 +39,6 @@ This example would run the script every 4 hours.
 
 The script's behavior is configured via `config.json` and its state is managed by `repo_state.json`. Please refer to these files for detailed configuration options and how to manage the monitored repositories and benchmarking triggers.
 
-In the `variables` section you can use a magig keyword `__GIT_HASH__` that will be replaced with the hash of the git commit on the branch that you are watching
+Each entry in `repos` watches one source repository (`repo_to_watch`/`branch_to_watch`) and contains a `runs` list. Every object in `runs` defines one GMT submission with these keys: `repo_to_run`, `machine_id`, `email`, `branch_to_run`, `filename`, and `variables`.
+
+In a run's `variables` section you can use the magic keyword `__GIT_HASH__`; it is replaced with the latest hash of the watched branch commit.
