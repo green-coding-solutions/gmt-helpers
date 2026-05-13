@@ -11,7 +11,7 @@ WHERE
         OR mm.metric = 'cpu_throttling_thermal_msr_component'
     )
     AND value = 1
-    AND r.created_at > NOW() - INTERVAL '25 HOURS';
+    AND r.created_at > NOW() - INTERVAL '25 HOURS'
 
 ######
 
@@ -19,7 +19,7 @@ WHERE
 SELECT runs.name, runs.machine_id, warnings.message,warnings.created_at
 FROM warnings
 JOIN runs on runs.id = warnings.run_id
-WHERE warnings.created_at > NOW() - INTERVAL '25 HOURS';
+WHERE warnings.created_at > NOW() - INTERVAL '25 HOURS'
 
 ######
 
@@ -31,7 +31,7 @@ WHERE
     (kv.value = 'Unknown' OR kv.value = 'File not found')
     -- AND created_at > NOW() - INTERVAL '25 HOURS' -- add time constraint if needed
     AND kv.key NOT IN ('Docker Volumes', 'Scaling Governor', 'SGX', 'Turbo Boost (1=off)', 'Turbo Boost (Legacy non intel_pstate)', 'Virtualization')
-GROUP BY kv.key;
+GROUP BY kv.key
 
 
 ######
@@ -50,7 +50,7 @@ WHERE
 )
 
 -- AND created_at > NOW() - INTERVAL '25 HOURS' -- add time constraint if needed
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
 
 ###### Check for index exhaustion
 
@@ -66,4 +66,4 @@ SELECT
     last_value::float/max_value as ratio
 FROM pg_sequences
 WHERE last_value::float/max_value > 0.05
-ORDER BY schemaname, sequencename;
+ORDER BY schemaname, sequencename
