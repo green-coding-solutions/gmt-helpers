@@ -6,6 +6,7 @@ import faulthandler
 faulthandler.enable(file=sys.__stderr__)  # will catch segfaults and write to stderr
 
 import os
+import pprint
 
 from lib import error_helpers
 from lib.db import DB
@@ -27,12 +28,15 @@ if __name__ == '__main__':
             print('Running query:', query)
             data = DB().fetch_all(query)
             if data:
+                message =f"Query: {query}\n\nData:\n"
+                for row in data:
+                    message = f"{message}\n\n{pprint.pformat(row)}"
                 Job.insert(
                     'email-simple',
                     user_id=0,
                     email=GlobalConfig().config['admin']['error_email'],
                     name='Query returned non empty result',
-                    message=f"Query: {query}\n\nData: {data}"
+                    message=message
                 )
 
         with open(os.path.join(CURRENT_DIR, 'queries_info.sql'), encoding='utf-8') as f:
@@ -46,12 +50,15 @@ if __name__ == '__main__':
             data = DB().fetch_all(query)
 
             if data:
+                message =f"Query: {query}\n\nData:\n"
+                for row in data:
+                    message = f"{message}\n\n{pprint.pformat(row)}"
                 Job.insert(
                     'email-simple',
                     user_id=0,
                     email=GlobalConfig().config['admin']['notification_email'],
                     name='Info query',
-                    message=f"Query: {query}\n\nData: {data}"
+                    message=message
                 )
 
     except Exception as exception: #pylint: disable=broad-except
