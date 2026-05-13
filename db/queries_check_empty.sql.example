@@ -1,7 +1,7 @@
 -- Separate queries in this file via newline + ###### + newline
 
 -- check for DB throttling
-SELECT *
+SELECT r.id, mm.metric, r.name
 FROM measurement_metrics as mm
 JOIN measurement_values as mv ON mv.measurement_metric_id = mm.id
 JOIN runs as r ON mm.run_id = r.id
@@ -38,7 +38,7 @@ GROUP BY kv.key
 
 -- Check for broken Eco CI entries
 
-SELECT energy_uj::float/duration_us as wattage, created_at, *
+SELECT energy_uj::float/duration_us as wattage, created_at
 FROM ci_measurements
 WHERE
 (
