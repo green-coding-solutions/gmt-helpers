@@ -27,6 +27,7 @@ STATUS_204_EXCLUDES = {
     'GET /v1/ci/runs',
     'GET /v1/ci/measurements',
     'GET /v1/badge/single/[a-z0-9-]{36}',
+    'GET /v1/cluster/status HTTP/2.0',
 }
 
 STATUS_301_EXCLUDES = {
@@ -71,11 +72,29 @@ STATUS_304_EXCLUDES = {
     'GET /images/favicon.ico HTTP/2.0',
     'GET /css/green-coding.css HTTP/2.0',
     'GET /dist/themes/default/assets/fonts/icons.woff2 HTTP/2.0',
+    'GET /dist/js/modal.min.js HTTP/2.0',
+    'GET /dist/js/dimmer.min.js HTTP/2.0',
+    'GET /cluster-status.html HTTP/2.0',
+    'GET /js/cluster-status.js HTTP/2.0',
+    'GET /js/helpers/metric-boxes.js HTTP/2.0',
+    'GET /js/helpers/charts.js HTTP/2.0',
+    'GET /js/helpers/phase-stats.js HTTP/2.0',
 }
 
 
-STATUS_307_EXCLUDES = {'GET / HTTP/1.1'}
+STATUS_307_EXCLUDES = {
+    'GET / HTTP/1.1',
+        'GET / HTTP/2.0',
+        'GET /v1/ci/badge/get/',
+}
+
 STATUS_401_EXCLUDES = {'POST /v2/hog/add HTTP/1.1'}
+
+STATUS_404_EXCLUDES = {
+        'GET /robots.txt HTTP/2.0',
+        'GET /robots.txt HTTP/1.1',
+}
+
 STATUS_410_EXCLUDES = {'POST /v1/hog/add HTTP/1.1'}
 STATUS_422_EXCLUDES = {'GET /v1/ci/badge/get'}
 
@@ -98,6 +117,8 @@ def _is_interesting_request(status, request, count):
     if status_int == 307:
         return request not in STATUS_307_EXCLUDES
     if status_int == 401:
+        return request not in STATUS_401_EXCLUDES
+    if status_int == 404:
         return request not in STATUS_401_EXCLUDES
     if status_int == 410:
         return request not in STATUS_410_EXCLUDES
