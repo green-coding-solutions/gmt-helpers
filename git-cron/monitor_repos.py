@@ -93,7 +93,7 @@ class APIClient:
         for k, v in list(payload.items()):
             if isinstance(v, str):
                 payload[k] = v.strip()
-        return self._request("/v1/software/add", method="POST", json_body=payload)
+        return self._request("/v1/runs/add", method="POST", json_body=payload)
 
 
 # ---- Git helpers: get latest commit for GitHub / GitLab ----
