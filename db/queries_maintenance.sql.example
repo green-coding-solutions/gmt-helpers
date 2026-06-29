@@ -1,0 +1,13 @@
+-- Separate queries in this file via newline + ###### + newline
+-- Each query is executed with DB().query() and the status message (e.g. "DELETE 5") is logged.
+-- A summary email is sent when any query affects rows.
+
+-- Example: delete old temporary run data older than 90 days
+-- DELETE FROM runs WHERE temporary = TRUE AND created_at < NOW() - INTERVAL '90 days'
+
+######
+
+-- Example: purge expired API tokens
+-- DELETE FROM api_tokens WHERE expires_at < NOW()
+
+######
