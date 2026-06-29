@@ -32,19 +32,5 @@ if __name__ == '__main__':
             print('Result:', status)
             results.append((query, status))
 
-        affected = [(q, s) for q, s in results if s and not s.endswith(' 0')]
-
-        if affected:
-            message = 'Maintenance queries with affected rows:\n\n'
-            for query, status in affected:
-                message += f"Status: {status}\nQuery:\n{query}\n\n"
-            Job.insert(
-                'email-simple',
-                user_id=0,
-                email=GlobalConfig().config['admin']['notification_email'],
-                name='DB maintenance summary',
-                message=message
-            )
-
     except Exception as exception: #pylint: disable=broad-except
         error_helpers.log_error('Base exception occurred in GMT Helpers db/run_maintenance.py: ', exception=exception)
