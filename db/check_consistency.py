@@ -25,9 +25,6 @@ if __name__ == '__main__':
             if query.strip() == '':
                 continue
 
-            if 'LIMIT' not in query:
-                query += ' LIMIT 10'
-
             print('Running query:', query)
             data = DB().fetch_all(query)
             if data:
@@ -48,9 +45,6 @@ if __name__ == '__main__':
         for query in content.split('\n######\n'):
             if query.strip() == '':
                 continue
-
-            if 'LIMIT' not in query:
-                query += ' LIMIT 10'
 
             print('Running query:', query)
             data = DB().fetch_all(query)
