@@ -12,7 +12,7 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 from lib.global_config import GlobalConfig
 from lib.db import DB
 from lib import error_helpers
-from lib.job.base import Job
+from lib.job.email_simple import EmailSimpleJob
 
 """
     This file checks the jobs queue for overdue jobs which might need admin attention to check if processing of the cluster is blocked / delayed
@@ -31,8 +31,7 @@ def check_queue(hours=6):
         errors.append(f"Name {name}; ID: {job_id}")
 
     if errors:
-        Job.insert(
-            'email-simple',
+        EmailSimpleJob.insert(
             user_id=0,
             email=GlobalConfig().config['admin']['notification_email'],
             name=f"Jobs in queue are waiting for longer than {hours} hours",

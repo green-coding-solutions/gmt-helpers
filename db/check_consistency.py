@@ -10,7 +10,7 @@ import pprint
 
 from lib import error_helpers
 from lib.db import DB
-from lib.job.base import Job
+from lib.job.email_simple import EmailSimpleJob
 from lib.global_config import GlobalConfig
 
 CURRENT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
@@ -31,8 +31,7 @@ if __name__ == '__main__':
                 message =f"Query: {query}\n\nData:\n"
                 for row in data:
                     message = f"{message}\n\n{pprint.pformat(row)}"
-                Job.insert(
-                    'email-simple',
+                EmailSimpleJob.insert(
                     user_id=0,
                     email=GlobalConfig().config['admin']['error_email'],
                     name='Query returned non empty result',
@@ -53,8 +52,7 @@ if __name__ == '__main__':
                 message =f"Query: {query}\n\nData:\n"
                 for row in data:
                     message = f"{message}\n\n{pprint.pformat(row)}"
-                Job.insert(
-                    'email-simple',
+                EmailSimpleJob.insert(
                     user_id=0,
                     email=GlobalConfig().config['admin']['notification_email'],
                     name='Info query',

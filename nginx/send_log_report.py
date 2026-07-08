@@ -10,7 +10,7 @@ from collections import defaultdict
 from http import HTTPStatus
 
 from lib import error_helpers
-from lib.job.base import Job
+from lib.job.email_simple import EmailSimpleJob
 from lib.global_config import GlobalConfig
 
 
@@ -216,8 +216,7 @@ if __name__ == '__main__':
         message = '\n'.join(access_log)
         message += '\n\n\n'
         message += '\n'.join(error_log)
-        Job.insert(
-            'email-simple',
+        EmailSimpleJob.insert(
             user_id=0,
             email=GlobalConfig().config['admin']['notification_email'],
             name='NGINX Logs parsed',
